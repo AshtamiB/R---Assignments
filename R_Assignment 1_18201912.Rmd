@@ -1,0 +1,150 @@
+---
+title: "R Assignment 1"
+author: "Ashtami Bhuleskar 18201912"
+date: "October 11, 2018"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+> **Data Programming with R**
+
+#Task 1: Manipulation#
+
+##1.1: Load the dataset EurostatCrime##
+
+```{r}
+mydata <- read.csv(file = "C:\\Users\\Ashtami\\Documents\\R\\EurostatCrime2015.csv", head=TRUE,sep=",")
+colnames(mydata)[colnames(mydata)=="X"] <- "Country"
+mydata
+```
+
+##1.2: Size and the structure of this dataset##
+
+```{r}
+str(mydata)
+class(mydata)
+dim(mydata)
+```
+
+##1.3: Produce appropriate commands##
+###i) Add a new column called Sex.crime###
+```{r}
+mydata$Sex.crime <- mydata$Rape + mydata$Sexual.assault + mydata$Sexual.violence
+```
+
+
+###ii) Remove the columns Rape, Sexual.assault and Sexual.violence###
+```{r}
+mydata$Rape <- NULL
+mydata$Sexual.assault <- NULL
+mydata$Sexual.violence <- NULL
+mydata
+```
+
+
+##1.4: List the countries that contain any missing data##
+
+```{r}
+countryList <- mydata$Country[complete.cases(mydata)==FALSE]
+countryList
+```
+
+##1.5: Remove the countries with missing data from the dataframe##
+
+```{r}
+mydata_new <- na.omit(mydata)
+mydata_new
+```
+
+##1.6: What is the size of this new dataframe?##
+
+```{r}
+dim(mydata_new)
+```
+
+#Task 2: Analysis#
+
+##2.1: What was the most common crime in Ireland in 2015?##
+
+```{r}
+irishmax <- max(mydata[which(mydata$Country=="Ireland"),2:ncol(mydata)])
+irishmax
+colnames(mydata)[which(mydata == irishmax, arr.ind = TRUE)[2]]
+```
+
+##2.2: Three least common crimes in Ireland in 2015?##
+
+```{r}
+leastIrish <- sort(mydata[which(mydata$Country=="Ireland"),2:ncol(mydata)])
+leastIrish[1:3]
+```
+
+##2.3: Which country have the highest record of offences##
+
+```{r}
+maxCountry <- mydata$Country[which.max(rowSums(mydata[-1],na.rm = TRUE))]
+maxCountry
+```
+
+
+##3##
+
+###Correlation Plot###
+```{r}
+correlat <- mydata_new[,c(2,3,4,5,6)]
+corr_matrix <- cor(correlat)
+corr_matrix <- round(corr_matrix,2)
+
+library(corrplot)
+corrplot(corr_matrix, type = "upper", order = "hclust", 
+         tl.col = "black", tl.srt = 45)
+```
+
+The correlation graph displays correlation between different offenses like Robbery, Assault, Sex Crime, Theft and International Homicide. From the plot, we can analyse that there is a strong positive correlation between Theft and Sex crime. We can infer from this that the countries having high occurences of Theft are likely to have considerably high occurances of Sex Crime. Other offesenses show lesses correlation.
+
+
+###Density Plot###
+
+```{r}
+par(mfrow=c(2,3))
+plot(density(mydata_new$Assault), xlab = "Assaults per hundred thousand inhabi-
+tants", main = "Histogram of Assault in Europe", col = "green", lwd = 2)
+plot(density(mydata_new$Intentional.homicide), xlab = "Homicides per hundred thousand inhabi-
+tants", main = "Histogram of Homicide in Europe", col = "red", lwd = 2)
+plot(density(mydata_new$Robbery), xlab = "Robberies per hundred thousand inhabi-
+tants", main = "Histogram of Robbery in Europe", col = "blue", lwd = 2)
+plot(density(mydata_new$Theft), xlab = "Thefts per hundred thousand inhabi-
+tants", main = "Histogram of Thefts in Europe", col = "brown", lwd = 2)
+plot(density(mydata_new$Sex.crime), xlab = "Sex crimes per hundred thousand inhabi-
+tants", main = "Histogram of Sex Crimes in Europe", col = "maroon", lwd = 2)
+```
+
+The density plots demostrates graph of density of values of each offense. The peak of the graph shows the region with highest number of a particular offense. The tail of the graph is the region with lower density of crime for a particular offense.
+
+###Scatterplot Matrix###
+
+```{r}
+pairs(mydata_new[-1])
+```
+
+The graph is the scatterplot between all pairs of types of offenses under consideration. The extremely scattered data points in the graphs can be thought of as outliers. There is no evident linear pattern in any of the paired graphs.
+
+###Pie Chart###
+
+```{r}
+par(mfrow=c(1,1))
+total <- colSums(mydata_new[-1])
+percent <- round(100*total/sum(total), 1)
+pie(total, main= "Total Offense Percentage", labels = percent, cex= 1, col=rainbow(length(total)),radius = 1)
+
+legend("topleft", c("Assault","International Homicide","Robbery","Theft", "Sex Crime"), cex = 0.8,
+       fill = rainbow(length(total)), bty = "n", title = "Legend of Offenses")
+```
+
+The pie chart illustrates different offenses in Europe in terms of percent occurance. By analysing the chart, we can see that the maximum offense in entire europe is Theft with 84.5% and the lowest of all is International Homicide having 0.1% only.
